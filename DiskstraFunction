@@ -1,0 +1,79 @@
+#will calculate the Dijkstra path of any list of vertices and tuple of edges, and will always assume the first vertex is the starting point, and the last is the ending point
+def Dijkstra(vertexList,edges):
+    #list of visited nodes, starts empty
+    visitedNodes = []
+
+    #starts keeping track of the current iterated node, starting with the first one
+    currentPlace = vertexList[0]
+
+    #creates a dictionary with each point which contains its shortest distance from the first vertex and its previous node
+    nodeDictionary = {}
+    nodeDictionary[currentPlace] = [0]
+    #adds all nodes of the graph to the dictionary
+    for i in range(1,len(vertexList)):
+        nodeDictionary[vertexList[i]] = [float("inf"),""]
+    
+
+    #iterates the rest of the program
+    while True:
+        #get the current list of edges connecting to the current node
+        listOfEdges = getRelevantEdges(edges,currentPlace)
+        currentNodeVisiting = currentPlace
+
+        #update the node dictionary values and get the next node to be at
+        (nodeDictionary,currentPlace) = updateNodeAndNext(nodeDictionary,listOfEdges,currentPlace,visitedNodes)
+
+        #add the previously visited node to the list of visited nodes
+        visitedNodes.append(currentNodeVisiting)
+
+        #if we've made it to the final node we want to be at
+        if currentPlace == vertexList[-1]:
+            #return the shortest distance to this, which will include the entire journey from the first vertex to here
+            return nodeDictionary[currentPlace][0]
+
+
+
+def getRelevantEdges(edges, currentPlace):
+    #goes through the list of tuples holding each edge and its info, and returns only the ones relevant to the current node
+    listOfRelevant = []
+    for lis in edges:
+        if lis[0] == currentPlace or lis[1] == currentPlace:
+            listOfRelevant.append(lis)
+    return listOfRelevant
+
+def updateNodeAndNext(nodeDictionary,listOfEdges,currentPlace,visitedNodes):
+    #these are relevant for returning the next proper node
+    nextNode = ""
+    nextNodeWeight = float('inf')
+    #iterate through each edge at current node
+    for edge in listOfEdges:
+        #set the observed edge to the edge we are not at
+        if edge[0] != currentPlace:
+            observedPlace = edge[0]
+        else:
+            observedPlace = edge[1]
+
+        #if we've put it in the observed list we don't need to look at it
+        if(observedPlace in visitedNodes):
+            continue
+        
+        #the weight of the edge is its own weight plus the previous weight
+        weightOfEdge = edge[2] + nodeDictionary[currentPlace][0]
+
+        #if this weight is smaller than the shortest distance weight the node has, relpace it with this weight, with the previous node being the current node
+        if weightOfEdge < nodeDictionary[observedPlace][0]:
+            nodeDictionary[observedPlace][0] = weightOfEdge
+            nodeDictionary[observedPlace][1] = currentPlace
+
+        #if this is the smallest weight found, allocate it to be the returned node
+        if weightOfEdge < nextNodeWeight:
+            nextNodeWeight = weightOfEdge
+            nextNode = observedPlace
+    #return the updated dictionary and the next node to be at
+    return (nodeDictionary,nextNode)
+        
+#this is an example of a graph being tested, you can draw this graph out to see that it is in fact accurate
+vertexList = ["A","B","F","D","E","C"]
+edgeList = [("A","B",2),("A","D",8),("D","B",5),("B","E",6),("D","E",3),("D","F",2),("E","C",9),("E","F",1),("C","F",3)]
+
+print(Dijkstra(vertexList,edgeList))
